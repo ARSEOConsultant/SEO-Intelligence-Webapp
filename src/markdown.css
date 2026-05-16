@@ -1,0 +1,43 @@
+.markdown-body {
+  --md-font-size: 0.875rem;
+  --md-line-height: 1.625;
+}
+
+.markdown-body h1 {
+  @apply font-serif text-3xl font-light mt-8 mb-4 text-[#e1e1e1] tracking-tight;
+}
+.markdown-body h2 {
+  @apply font-serif text-2xl font-light mt-8 mb-4 text-[#e1e1e1] tracking-tight border-b border-border-dark pb-2;
+}
+.markdown-body h3 {
+  @apply font-sans font-bold text-xs uppercase tracking-widest text-text-muted mt-6 mb-3;
+}
+.markdown-body p {
+  @apply text-gray-400 mb-4;
+  font-size: var(--md-font-size);
+  line-height: var(--md-line-height);
+}
+.markdown-body ul {
+  @apply list-disc list-outside ml-6 mb-4 space-y-2 text-gray-400;
+  font-size: var(--md-font-size);
+  line-height: var(--md-line-height);
+}
+.markdown-body ol {
+  @apply list-decimal list-outside ml-6 mb-4 space-y-2 text-gray-400;
+  font-size: var(--md-font-size);
+  line-height: var(--md-line-height);
+}
+.markdown-body strong {
+  @apply font-semibold text-white;
+}
+.markdown-body a {
+  @apply text-accent hover:text-accent-hover hover:underline font-medium;
+}
+.markdown-body hr {
+  @apply my-8 border-border-dark;
+}
+.markdown-body blockquote {
+  @apply border-l-2 border-accent pl-4 italic text-gray-400 my-4;
+  font-size: var(--md-font-size);
+  line-height: var(--md-line-height);
+}

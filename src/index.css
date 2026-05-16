@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "./markdown.css";
+
+@theme {
+  --color-bg-primary: #0a0b0d;
+  --color-bg-secondary: #14161a;
+  --color-accent: #c4a47c;
+  --color-accent-hover: #b3936a;
+  --color-text-muted: #8e9299;
+  --color-border-dark: #24272e;
+  
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Georgia", serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: #e1e1e1;
+}
+
