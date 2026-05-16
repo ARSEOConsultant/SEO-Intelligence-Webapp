@@ -96,10 +96,42 @@ function getSubarray(arr: string[], page: number, size: number) {
   return result;
 }
 
-async function getLiveRssContext(page: number = 1, searchQuery?: string) {
+const SOURCE_TO_URL: Record<string, string[]> = {
+  'Search Engine Land': ['https://searchengineland.com/feed'],
+  'Search Engine Roundtable': ['http://www.seroundtable.com/index.rdf'],
+  'Moz': ['https://moz.com/posts/rss/blog'],
+  'Ahrefs': ['https://ahrefs.com/blog/feed/'],
+  'Semrush': ['https://www.semrush.com/blog/feed/'],
+  'Lily Ray': ['https://lilyraynyc.substack.com/feed'],
+  'Barry Schwartz': ['http://www.seroundtable.com/index.rdf'],
+  'Cyrus Shepard': ['https://zyppy.com/feed/', 'https://moz.com/posts/rss/blog'],
+  'Marie Haynes': ['https://www.mariehaynes.com/feed/']
+};
+
+async function getLiveRssContext(page: number = 1, searchQuery?: string, prefs?: any) {
   try {
+    let targetFeeds: string[] = ALL_SEO_FEEDS;
+    
+    // If user has specific sources selected, prioritize or filter to those feeds
+    if (prefs && prefs.sources && prefs.sources.length > 0) {
+      targetFeeds = [];
+      prefs.sources.forEach((source: string) => {
+        if (SOURCE_TO_URL[source]) {
+          targetFeeds.push(...SOURCE_TO_URL[source]);
+        }
+      });
+      // Deduplicate
+      targetFeeds = [...new Set(targetFeeds)];
+      
+      // If we don't have many feeds, we might optionally add some general ones back, but let's just stick to what they asked for to ensure their selected authors appear!
+      if (targetFeeds.length === 0) {
+        targetFeeds = ALL_SEO_FEEDS;
+      }
+    }
+
     const fetchSize = searchQuery ? 30 : 12; // Fetch more feeds if searching
-    const selectedFeeds = getSubarray(ALL_SEO_FEEDS, page, fetchSize);
+    const selectedFeeds = getSubarray(targetFeeds, page, fetchSize);
+    
     // Add catch to prevent unhandled promise rejections crashing Promise.allSettled? 
     // They are handled by allSettled, but good safety.
     const feedPromises = selectedFeeds.map(url => rssParser.parseURL(url));
@@ -109,16 +141,18 @@ async function getLiveRssContext(page: number = 1, searchQuery?: string) {
     results.forEach(res => {
       if (res.status === 'fulfilled' && res.value) {
         const sourceTitle = res.value.title;
-        const itemsArray = searchQuery ? res.value.items : res.value.items?.slice(0, 5);
+        // Take more items per feed if we filtered down to a few sources
+        const itemsToTake = (prefs && prefs.sources && prefs.sources.length > 0) ? 10 : 5;
+        const itemsArray = searchQuery ? res.value.items : res.value.items?.slice(0, itemsToTake);
         
         itemsArray?.forEach(item => {
            if (searchQuery) {
              const contentToSearch = `${item.title || ''} ${item.contentSnippet || ''}`.toLowerCase();
              if (contentToSearch.includes(searchQuery.toLowerCase())) {
-               allItems.push(`Source: ${sourceTitle}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
+               allItems.push(`Source: ${sourceTitle}\nDate: ${item.pubDate || 'Unknown'}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
              }
            } else {
-             allItems.push(`Source: ${sourceTitle}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
+             allItems.push(`Source: ${sourceTitle}\nDate: ${item.pubDate || 'Unknown'}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
            }
         });
       }
@@ -182,6 +216,7 @@ Include:
 - Key takeaways or actionable insights for SEO professionals.
 Keep the tone professional and focus on real, recent facts and events.`;
 
+      let prefsObj;
       if (category === 'My Feed' && req.query.prefs) {
         let prefs;
         try {
@@ -189,6 +224,7 @@ Keep the tone professional and focus on real, recent facts and events.`;
         } catch(e) {
           prefs = {};
         }
+        prefsObj = prefs;
         const cats = prefs.categories?.length > 0 ? prefs.categories.join(', ') : 'all SEO topics';
         const sources = prefs.sources?.length > 0 ? prefs.sources.join(', ') : 'popular SEO blogs';
         prompt = `Provide a personalized daily dashboard digest of the exact most recent and latest news for the following SEO categories: "${cats}". 
@@ -219,7 +255,11 @@ Include:
       }
 
       // Append RSS contextual data to whatever the prompt is
-      const rssContext = await getLiveRssContext(page, searchQuery || (category.startsWith('Search: ') ? category.substring(8) : undefined));
+      const rssContext = await getLiveRssContext(
+        page, 
+        searchQuery || (category.startsWith('Search: ') ? category.substring(8) : undefined),
+        prefsObj
+      );
       if (rssContext) {
         prompt += rssContext;
       }
