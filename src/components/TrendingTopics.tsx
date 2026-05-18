@@ -81,7 +81,7 @@ export default function TrendingTopics({ onSelectTrend, activeTab }: TrendingTop
   }
 
   if (!trends.length) {
-    return <div className="text-xs text-gray-500 py-4">No trending data available.</div>;
+    return <div className="text-xs text-text-muted py-4">No trending data available.</div>;
   }
 
   const dataWithFill = trends.map((t, index) => {

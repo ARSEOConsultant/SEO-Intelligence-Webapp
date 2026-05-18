@@ -146,12 +146,23 @@ async function getLiveRssContext(page: number = 1, searchQuery?: string, prefs?:
         const itemsArray = searchQuery ? res.value.items : res.value.items?.slice(0, itemsToTake);
         
         itemsArray?.forEach(item => {
+           let includeItem = true;
+           const contentToSearch = `${item.title || ''} ${item.contentSnippet || ''}`.toLowerCase();
+           
            if (searchQuery) {
-             const contentToSearch = `${item.title || ''} ${item.contentSnippet || ''}`.toLowerCase();
-             if (contentToSearch.includes(searchQuery.toLowerCase())) {
-               allItems.push(`Source: ${sourceTitle}\nDate: ${item.pubDate || 'Unknown'}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
+             if (!contentToSearch.includes(searchQuery.toLowerCase())) {
+               includeItem = false;
              }
-           } else {
+           }
+           
+           if (includeItem && prefs?.excludedKeywords && prefs.excludedKeywords.length > 0) {
+             const excluded = prefs.excludedKeywords.some((keyword: string) => contentToSearch.includes(keyword.toLowerCase()));
+             if (excluded) {
+               includeItem = false;
+             }
+           }
+
+           if (includeItem) {
              allItems.push(`Source: ${sourceTitle}\nDate: ${item.pubDate || 'Unknown'}\nTitle: ${item.title}\nLink: ${item.link}\nSummary: ${item.contentSnippet || item.content || ''}`);
            }
         });
@@ -212,7 +223,7 @@ Format the response in clean, beautiful Markdown.
 Source your information from popular SEO blogs, SEO professionals, and AI search experts.
 Include:
 - A "Trending Topics & Key Insights" intro summary.
-- A list of EXACTLY 8-10 specific recent articles, news, or latest algorithm updates in this category. For each, use a sub-heading with the title (hyperlinked to its provided Link), the source (e.g. Search Engine Land, specific blogs), and a 3-4 sentence summary.
+- A list of EXACTLY 8-10 specific recent articles, news, or latest algorithm updates in this category. For each, use a sub-heading with the title (hyperlinked to its provided Link). ON THE VERY NEXT LINE, put the source formatted like: "**Source:** Source Name". THEN, LEAVE A BLANK EMPTY LINE. THEN, put a 3-4 sentence summary. Do not combine them.
 - Key takeaways or actionable insights for SEO professionals.
 Keep the tone professional and focus on real, recent facts and events.`;
 
@@ -227,12 +238,18 @@ Keep the tone professional and focus on real, recent facts and events.`;
         prefsObj = prefs;
         const cats = prefs.categories?.length > 0 ? prefs.categories.join(', ') : 'all SEO topics';
         const sources = prefs.sources?.length > 0 ? prefs.sources.join(', ') : 'popular SEO blogs';
+        
+        let excludeText = '';
+        if (prefs.excludedKeywords?.length > 0) {
+          excludeText = `\nCRITICAL: Do absolutely NOT include any news, articles, references, or topics related to the following keywords: "${prefs.excludedKeywords.join(', ')}". Skip those entirely.`;
+        }
+
         prompt = `Provide a personalized daily dashboard digest of the exact most recent and latest news for the following SEO categories: "${cats}". 
-Source the information specifically prioritizing these blogs/experts: "${sources}". If they lack recent news, supplement with other trusted SEO sources.
+Source the information specifically prioritizing these blogs/experts: "${sources}". If they lack recent news, supplement with other trusted SEO sources.${excludeText}
 Format the response in clean, beautiful Markdown. 
 Include:
 - A "Personalized Insights" intro summary for this feed.
-- A list of EXACTLY 8-10 specific recent articles, news, or updates touching on these categories or from these sources. For each, use a sub-heading with the title (hyperlinked to its provided Link), the source, and a 3-4 sentence summary.
+- A list of EXACTLY 8-10 specific recent articles, news, or updates touching on these categories or from these sources. For each, use a sub-heading with the title (hyperlinked to its provided Link). ON THE VERY NEXT LINE, put the source formatted like: "**Source:** Source Name". THEN, LEAVE A BLANK EMPTY LINE. THEN, put a 3-4 sentence summary. Do not combine them.
 - Key takeaways for SEO professionals.
 Keep the tone professional and focus on real facts.`;
       } else if (category.startsWith('Trend: ')) {
@@ -242,7 +259,7 @@ Format the response in clean, beautiful Markdown.
 Source your information from popular SEO blogs, SEO professionals, and AI search experts.
 Include:
 - An overview of why "${trend}" is trending right now.
-- A list of EXACTLY 8-10 specific recent articles or news covering this trend. For each, use a sub-heading with the title (hyperlinked to its provided Link), the source, and a summary.
+- A list of EXACTLY 8-10 specific recent articles or news covering this trend. For each, use a sub-heading with the title (hyperlinked to its provided Link). ON THE VERY NEXT LINE, put the source formatted like: "**Source:** Source Name". THEN, LEAVE A BLANK EMPTY LINE. THEN, put a summary. Do not combine them.
 - Actionable advice for SEOs regarding this trend.`;
       } else if (category === 'Search' && searchQuery) {
         prompt = `You are an intelligent search assistant for recent SEO news. The user has searched for the keyword: "${searchQuery}".
@@ -250,7 +267,7 @@ Format the response in clean, beautiful Markdown.
 Search through your knowledge and the provided RSS feed data for any relevant recent articles, news, or updates specifically regarding "${searchQuery}".
 Include:
 - A brief summary of the search insight for "${searchQuery}".
-- A list of EXACTLY 8-10 specific recent articles or news related to this search query. For each, use a sub-heading with the title (hyperlinked to its provided Link), the source, and a summary.
+- A list of EXACTLY 8-10 specific recent articles or news related to this search query. For each, use a sub-heading with the title (hyperlinked to its provided Link). ON THE VERY NEXT LINE, put the source formatted like: "**Source:** Source Name". THEN, LEAVE A BLANK EMPTY LINE. THEN, put a summary. Do not combine them.
 - If fewer than 8 articles are found in the recent feeds for this exact query, supplement with other closely related recent SEO news.`;
       }
 

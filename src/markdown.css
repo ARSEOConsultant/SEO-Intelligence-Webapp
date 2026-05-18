@@ -13,7 +13,7 @@
   @apply font-sans font-bold text-xs uppercase tracking-widest text-text-muted mt-6 mb-3;
 }
 .markdown-body p {
-  @apply text-gray-400 mb-4;
+  @apply text-gray-400 mb-4 whitespace-pre-wrap;
   font-size: var(--md-font-size);
   line-height: var(--md-line-height);
 }

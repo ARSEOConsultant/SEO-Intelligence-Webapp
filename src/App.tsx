@@ -198,15 +198,16 @@ export default function App() {
               <span>Market Pulse: <span className="text-accent">Active</span></span>
             </div>
             
-            <form onSubmit={handleSearchSubmit} className="flex relative items-center">
+            <form onSubmit={handleSearchSubmit} className="flex relative items-center" role="search">
               <input 
                 type="text" 
+                aria-label="Search"
                 placeholder="Search..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-32 sm:w-48 md:w-64 rounded-sm border border-border-dark bg-bg-secondary px-3 py-1 text-xs placeholder:text-gray-500 pr-10 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent text-white"
+                className="h-9 w-32 sm:w-48 md:w-64 rounded-sm border border-border-dark bg-bg-secondary px-3 py-1 text-xs placeholder:text-gray-400 pr-10 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent text-white"
               />
-              <button type="submit" className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-gray-500 hover:text-accent disabled:opacity-50" disabled={!searchQuery.trim()}>
+              <button type="submit" aria-label="Submit search" className="absolute right-0 top-0 h-9 w-9 flex items-center justify-center text-gray-400 hover:text-accent disabled:opacity-50" disabled={!searchQuery.trim()}>
                 <Search className="h-4 w-4" />
               </button>
             </form>
@@ -227,10 +228,12 @@ export default function App() {
                 {!subscribed ? (
                   <form onSubmit={handleSubscribe} className="space-y-4 mt-4">
                     <div className="space-y-2">
-                      <input id="name" name="name" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Full Name" />
+                      <label htmlFor="name" className="sr-only">Full Name</label>
+                      <input id="name" name="name" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Full Name" />
                     </div>
                     <div className="space-y-2">
-                      <input id="email" name="email" type="email" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Email Address" />
+                      <label htmlFor="email" className="sr-only">Email Address</label>
+                      <input id="email" name="email" type="email" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Email Address" />
                     </div>
                     <div className="flex items-start space-x-2 pt-2">
                       <input type="checkbox" id="consent" name="consent" required className="h-4 w-4 rounded-sm border-border-dark bg-bg-primary text-accent focus:ring-accent mt-1 cursor-pointer accent-accent" />
@@ -238,7 +241,7 @@ export default function App() {
                         <label htmlFor="consent" className="text-xs font-medium text-gray-300 cursor-pointer">
                           I agree to receive the weekly newsletter
                         </label>
-                        <p className="text-[10px] text-gray-500 max-w-sm">
+                        <p className="text-[10px] text-gray-400 max-w-sm">
                           GDPR Compliant. No spam. Unsubscribe at any time.
                         </p>
                       </div>
@@ -260,7 +263,7 @@ export default function App() {
                 )}
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" className="sm:hidden text-text-muted hover:text-white">
+            <Button variant="ghost" size="icon" aria-label="Open menu" className="sm:hidden text-text-muted hover:text-white">
               <Menu className="h-5 w-5" />
             </Button>
           </div>
@@ -274,7 +277,7 @@ export default function App() {
           <h2 className="font-serif text-4xl md:text-5xl font-light text-white tracking-tight mb-4">
              Today's SEO Intelligence
           </h2>
-          <p className="text-sm text-gray-400 max-w-2xl">
+          <p className="text-sm text-gray-300 max-w-2xl">
             Real-time industry shifts, algorithm watch, and expert strategies curated into a beautiful daily dashboard. Powered by AI search.
           </p>
         </div>
@@ -330,16 +333,14 @@ export default function App() {
                     <div className="markdown-body flex-1 min-w-0" style={{ '--md-font-size': fontSize, '--md-line-height': lineSpacing } as React.CSSProperties}>
                       <Markdown 
                         components={{
-                          a: ({node, href, children, ...props}) => {
+                          a: ({node, ...props}) => {
                             return (
-                              <span 
-                                onClick={() => href && window.open(href, '_blank', 'noopener,noreferrer')} 
-                                className="text-accent hover:underline cursor-pointer transition-colors"
-                                title={href}
-                                {...(props as any)}
-                              >
-                                {children}
-                              </span>
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-accent hover:underline transition-colors"
+                              />
                             );
                           }
                         }}
@@ -348,12 +349,12 @@ export default function App() {
                       </Markdown>
                     </div>
                     <div className="sm:sticky sm:top-28 flex sm:flex-col shrink-0 gap-3 items-center bg-bg-secondary p-3 rounded-sm border border-border-dark justify-center self-end sm:self-start mb-4 sm:mb-0">
-                      <Button onClick={() => { setPage(p => Math.max(1, p - 1)); document.getElementById('main-feed-content')?.scrollIntoView({ behavior: 'smooth' }); }} disabled={page === 1} size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary"> 
+                      <Button aria-label="Previous page" onClick={() => { setPage(p => Math.max(1, p - 1)); document.getElementById('main-feed-content')?.scrollIntoView({ behavior: 'smooth' }); }} disabled={page === 1} size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary"> 
                          <ChevronLeft className="h-4 w-4 sm:hidden" />
                          <ChevronUp className="h-4 w-4 hidden sm:block" />
                       </Button>
                       <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400 whitespace-nowrap">Pg {page}</span>
-                      <Button onClick={() => { setPage(p => p + 1); document.getElementById('main-feed-content')?.scrollIntoView({ behavior: 'smooth' }); }} size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary"> 
+                      <Button aria-label="Next page" onClick={() => { setPage(p => p + 1); document.getElementById('main-feed-content')?.scrollIntoView({ behavior: 'smooth' }); }} size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary"> 
                          <ChevronRight className="h-4 w-4 sm:hidden" />
                          <ChevronDown className="h-4 w-4 hidden sm:block" />
                       </Button>
@@ -364,13 +365,14 @@ export default function App() {
                         variant="ghost" 
                         disabled={refreshCooldown > 0}
                         className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary disabled:opacity-50" 
+                        aria-label={refreshCooldown > 0 ? `Refresh available in ${Math.ceil(refreshCooldown / 60)}m` : "Refresh Feed"}
                         title={refreshCooldown > 0 ? `Refresh available in ${Math.ceil(refreshCooldown / 60)}m` : "Refresh Feed"}
                       >
                          <RefreshCw className="h-4 w-4" />
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary" title="Reader Settings">
+                          <Button aria-label="Reader Settings" size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-bg-primary" title="Reader Settings">
                             <Type className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
@@ -428,7 +430,7 @@ export default function App() {
                  <Activity className="h-4 w-4 text-accent" />
                  <h3 className="text-xs uppercase tracking-widest text-white font-bold">Trending Topics</h3>
                </div>
-               <p className="text-[10px] text-gray-500 tracking-wider mb-2">Based on live RSS analysis of SEO articles in the past 7 days. Click on a trend to generate a deep-dive feed.</p>
+               <p className="text-[10px] text-gray-400 tracking-wider mb-2">Based on live RSS analysis of SEO articles in the past 7 days. Click on a trend to generate a deep-dive feed.</p>
                <TrendingTopics onSelectTrend={handleSelectTrend} activeTab={activeTab} />
             </div>
             
@@ -454,10 +456,12 @@ export default function App() {
                   </DialogHeader>
                   <form onSubmit={handleSubscribe} className="space-y-4 mt-4">
                       <div className="space-y-2">
-                        <input id="name2" name="name" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Full Name" />
+                        <label htmlFor="name2" className="sr-only">Full Name</label>
+                        <input id="name2" name="name" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Full Name" />
                       </div>
                       <div className="space-y-2">
-                        <input id="email2" name="email" type="email" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Email Address" />
+                        <label htmlFor="email2" className="sr-only">Email Address</label>
+                        <input id="email2" name="email" type="email" required className="flex h-10 w-full rounded-sm border border-border-dark bg-bg-primary px-3 py-2 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:border-accent focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50 text-white" placeholder="Email Address" />
                       </div>
                       <div className="flex items-start space-x-2 pt-2">
                         <input type="checkbox" id="consent2" name="consent" required className="h-4 w-4 rounded-sm border-border-dark bg-bg-primary text-accent focus:ring-accent mt-1 cursor-pointer accent-accent" />
@@ -465,7 +469,7 @@ export default function App() {
                           <label htmlFor="consent2" className="text-xs font-medium text-gray-300 cursor-pointer">
                             I agree to receive the weekly newsletter
                           </label>
-                          <p className="text-[10px] text-gray-500 max-w-sm">
+                          <p className="text-[10px] text-gray-400 max-w-sm">
                             GDPR Compliant. No spam. Unsubscribe at any time.
                           </p>
                         </div>
